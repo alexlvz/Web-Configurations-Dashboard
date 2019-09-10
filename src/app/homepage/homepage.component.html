@@ -1,0 +1,29 @@
+<div *ngIf="(canProceed==false || screen_mode == 'home_screen')">
+  <div class="fill-av">
+    <div class="container">
+      <div style="text-align: center; font-size: 20pt; color: rgb(8, 0, 77); font-family: 'Comic Sans MS'">
+
+      </div>
+      <table align="center">
+          <tr>
+            <td class="header">
+              XML Projects Configuration Dashboard
+            </td>
+          </tr>
+        </table>
+      <div style="margin-top: 13%; margin-left:1%">
+        <div class="row">
+          <div class="col">
+            <button class="expButtons" (click)="createExperiment()">Create Experiment</button>
+          </div>
+          <div class="col">
+              <button class="expButtons" (click)="loadExperiment()"> Load Experiment </button>
+            </div>
+          <div class="col">
+            <button class="expButtons" (click)="copyExperiment()"> Copy Experiment </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

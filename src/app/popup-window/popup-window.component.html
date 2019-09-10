@@ -1,0 +1,329 @@
+
+<!-- ***************************************************************************************** 
+  We created a different popup view for different operations. 
+  in this file we're setting up the view, according to the operation that was seleceted. 
+
+  *******************************************************************************************  -->
+  
+  
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <!-- ************************************************  -->
+  <!-- ************** New node settings ***************  -->
+  <!-- ************************************************  -->
+  
+  <div *ngIf="data.sender == 'newNode'" id="newNode">
+    <div
+    style="text-align: center; font-size: 20pt; color: rgb(0, 0, 0); font-family: 'Palatino Linotype'; text-shadow: 2px 2px 2px rgb(43, 43, 43);  letter-spacing: 1px">
+    Add new element </div>
+    <br>
+    <div>
+      <div id="head">
+        <div *ngIf="addingParent == null">
+          <br>
+          <div>
+            <button class="optionButtons" (click)="addingParent=true; isFormReady()"> Parent </button>
+            <button class="optionButtons" (click)="addingParent=false; isFormReady()"> Son </button>
+            <button class="optionButtons" id="cancel" (click)="closePopup(false)">Cancel</button>
+          </div>
+        </div>
+        <div *ngIf="addingParent != null">
+          <div *ngIf="addingParent">
+            <input type="text" placeholder="Enter parent name" class="form-control" [(ngModel)]="parent"
+            (ngModelChange)="isFormReady()" name="parentName">
+          </div>
+          <input type="text" placeholder="Enter key" class="form-control" [(ngModel)]="key"
+          (ngModelChange)="isFormReady()" name="key">
+          <input type="text" placeholder="Enter value" class="form-control" [(ngModel)]="value"
+          (ngModelChange)="isFormReady()" name="value">
+          <div>
+            <hr>
+            <button class="optionButtons" [(disabled)]="emptyFields" (click)="closePopup(true)">Save</button>
+            <button class="optionButtons" (click)="addingParent=null">Back</button>
+            <button class="optionButtons" id="cancel" (click)="closePopup(false)">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ************************************************  -->
+  <!-- ************ Skabat popup************ ***********  -->
+  <!-- ************************************************  -->
+  <div *ngIf="data.sender == 'skabat'" id="skabat">
+    <table align="center">
+      <tr>
+        <td align="center">
+            <form>
+                <input type="password" name="pass" placeholder="Skabat Password" [(ngModel)]="skabat_pass" size=22 ng-hide="true" autocomplete="password">
+            </form>
+        </td>
+      </tr>
+      <tr>
+        <td align="center">
+          <button class="optionButtons" (click)="closePopup(true)">Submit</button>
+          <button class="optionButtons" (click)="closePopup(false)">Cancel</button>
+        </td>
+      </tr>
+    </table>
+  </div>
+  
+  <!-- ************************************************  -->
+  <!-- ************ New Experiment settings ***********  -->
+  <!-- ************************************************  -->
+
+  <div *ngIf="data.sender == 'createEx'" id="createEx">
+    
+    <table align="center">
+      <div class="title">Configure Experiment</div>
+      <tr *ngIf="skabat_pass != 'skabat'">
+        <td align="center">
+            <form>
+                <input type="password" name="pass" placeholder="Skabat Password" [(ngModel)]="skabat_pass" size=22 ng-hide="true" autocomplete="password">
+            </form>
+          <br>
+        </td>
+      </tr>
+      <br>
+      <table *ngIf="skabat_pass =='skabat' ">
+        <tr>
+          <td>
+            Experiment Name
+          </td>
+          <td [formGroup]="dataForm">
+            <input id="experiment_name" formControlName="experiment_name" required type="text"
+            [(ngModel)]="experimentName" name="experimentName" size="25">
+          </td>
+          <td [formGroup]="dataForm">
+            <div *ngIf="experiment_name.invalid">
+              <div class="validation_error_star" *ngIf="experiment_name.errors.required">
+                <mat-icon>create</mat-icon>
+              </div>
+            </div>
+            <div *ngIf="!experiment_name.invalid">
+              <mat-icon>done</mat-icon>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            Categories
+          </td>
+          <td [formGroup]="dataForm">
+            <input id="number_of_categories" formControlName="number_of_categories" required type="number" min="1"
+            [(ngModel)]="num_of_categories" name="num_of_categories" (ngModelChange)="addCatagory()" style="width: 2em">
+          </td>
+          <td [formGroup]="dataForm">
+            <div *ngIf="number_of_categories.invalid">
+              <div class="validation_error_star" *ngIf="number_of_categories.errors.required">
+                <mat-icon>create</mat-icon>
+              </div>
+            </div>
+            <div *ngIf="!number_of_categories.invalid">
+              <mat-icon>done</mat-icon>
+            </div>
+          </td>
+        </tr>
+      </table>
+      <hr>
+      <table>
+        <table *ngFor="let catagory of categories; let i=index">
+          <tr valign="top" *ngFor="let subCatagory of categories[i]; let j=index">
+            <td [style.padding-left.px]="(subCatagory.level-1) *30">
+              <div class="btn-group" dropdown>
+                <label class="dropdown_style" dropdownToggle>
+                  Name &nbsp;
+                </label>
+                <ul *dropdownMenu class="dropdown-menu" role="menu">
+                  <li role="menuitem"><a class="dropdown-item" style="cursor:pointer" (click)="addSubCatagory(i,j)">Add
+                    sub category</a></li>
+                    <li role="menuitem"><a class="dropdown-item" style="cursor:pointer" (click)="deleteCategory(i,j)">Delete
+                      sub category</a></li>
+                    </ul>
+                  </div>
+                  <input type="text" [(ngModel)]="subCatagory.name" name="subCategory" size=22>
+                  <div class="btn btn-default image-preview-input optionButtons">
+                    <input [disabled]="!subCatagory.name" type="file" (change)="fileListener($event, i,j)" name="fileupload"
+                    accept=".xml" multiple>
+                    <span class="glyphicon glyphicon-folder-open"></span>
+                    <span class="image-preview-input-title">Add files</span>
+                  </div>
+                  <table *ngIf="subCatagory.files.length != 0">
+                    <tr *ngFor="let file of subCatagory.files; let k=index">
+                      <td>
+                        <mat-icon style="cursor: pointer; "[inline]="true"
+                        (click)="deleteFileFromCategory(i,j,k)">
+                        delete_outline</mat-icon>
+                        {{file.name}}
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+                <td>
+                  <div *ngIf="!subCatagory.name">
+                    <mat-icon>create</mat-icon>
+                  </div>
+                  <div *ngIf="subCatagory.name">
+                    <mat-icon>done</mat-icon>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </table>
+          <table align="center">
+            <tr>
+              <td>
+                <button [formGroup]="dataForm" class="optionButtons"
+                [hidden]="experiment_name.invalid || number_of_categories.invalid || files.length == 0"
+                (click)="closePopup(true)">Create</button>
+              </td>
+              <td>
+                <button class="optionButtons" (click)="closePopup(false)">Cancel</button>
+              </td>
+            </tr>
+          </table>
+        </table>
+      </div>
+      
+      <!-- ************************************************  -->
+      <!-- ************** Filter selection ****************  -->
+      <!-- ************************************************  -->
+      
+      <div *ngIf="data.sender == 'filtering'" id="filtering">
+        <table align="center">
+          <tr align="center">
+            <td>
+              <div
+              style="text-align: center; font-size: 20pt; color: rgb(0, 0, 0); font-family: 'Palatino Linotype'; text-shadow: 2px 2px 2px rgb(43, 43, 43);  letter-spacing: 1px">
+              Avaliable Filters </div>
+              <hr>
+            </td>
+          </tr>
+          <tr align="center" *ngFor="let filter of data.filters; let i=index">
+            <td>
+              <button class="expButtons" [disabled]="filterMode" (click)="selected_filter = filter; closePopup(true)">
+                {{filter.name}}</button>
+              </td>
+            </tr>
+            <tr align="center">
+              <td>
+                <br>
+                <button class="optionButtons" id="cancel" (click)="closePopup(false)">Cancel</button>
+              </td>
+            </tr>
+          </table>
+          
+          
+        </div>
+        
+        
+        <!-- ************************************************  -->
+        <!-- ************** Load Experiment setup ***********  -->
+        <!-- ************************************************  -->
+        
+        <div *ngIf="data.sender == 'loadEx'" id="loadEx">
+          <table align="center">
+            <div class="title">Load Experiment</div>
+            <br>
+            <tr *ngFor="let experiment of data.experiments">
+              <td align="center">
+                <button class="expButtons" (click)="this.selected_experiment = experiment; closePopup(true)">
+                  {{experiment.name}} </button>
+                </td>
+              </tr>
+              <tr>
+                <td align="center">
+                  <br>
+                  <br>
+                  <button class="optionButtons" (click)="closePopup(false)">Cancel</button>
+                </td>
+              </tr>
+              
+              
+            </table>
+          </div>
+          
+          <!-- ************************************************  -->
+          <!-- ************** Experiment resotore *************  -->
+          <!-- ************************************************  -->
+          
+          <div *ngIf="data.sender == 'restore'" id="restore">
+            <table align="center">
+              <div class="title">Previous Experiment Versions</div>
+              <tr>
+                <td align="center">
+                  Click on the desired version to restore
+                  <br>
+                </td>
+              </tr>
+              <tr *ngFor="let version of data.versions">
+                <td align="center">
+                  <button class="expButtons_ver" (click)="this.selected_version = version; closePopup(true)"> V
+                    {{version.version}}.0 Created on {{ version.date_of_creation }} </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center">
+                    <br>
+                    <br>
+                    <button class="optionButtons" (click)="closePopup(false)">Cancel</button>
+                  </td>
+                </tr>
+                
+                
+              </table>
+            </div>
+            
+            <!-- ************************************************  -->
+            <!-- ************ Copy Experiment setup *************  -->
+            <!-- ************************************************  -->
+            
+            <div *ngIf="data.sender == 'copyEx'" id="copyEx">
+              <table align="center">
+                <div class="title">Copy Experiment</div>
+                <br>
+                <tr *ngFor="let experiment of data.experiments">
+                  <td align="center" *ngIf="!this.selected_experiment">
+                    <button class="expButtons" (click)="this.selected_experiment = experiment;">
+                      {{experiment.name}} </button>
+                    </td>
+                  </tr>
+                  <table *ngIf="this.selected_experiment && !this.cloning_status">
+                    <tr>
+                      <td align="center">
+                        Copying Experiment: {{ this.selected_experiment.name }}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td> 
+                        New Experiment name: <input type="text" placeholder="Enter experiment name" [(ngModel)]="experimentName" >
+                      </td>
+                    </tr>
+                    <tr>
+                    </tr>
+                  </table>
+                  <tr>
+                    <td align="center" *ngIf="!this.cloning_status">
+                      <br>
+                      <button class="optionButtons" *ngIf="experimentName" (click)="copyExperiment()">Copy </button>
+                      <br>
+                      <button class="optionButtons" *ngIf="this.selected_experiment" (click)="this.selected_experiment = null">Back</button>
+                      <button class="optionButtons" (click)="closePopup(false)">Cancel</button>
+                    </td>
+                  </tr>
+                </table>
+                <table align="center" *ngIf="this.cloning_status" >
+                  <tr>
+                    <td >
+                      <h6> {{ this.cloning_status }} </h6>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td align="center">
+                      <button class="optionButtons" (click)="closePopup(false)">Close</button>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+              
+              
+              

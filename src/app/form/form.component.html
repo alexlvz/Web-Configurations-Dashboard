@@ -1,0 +1,538 @@
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<app-homepage></app-homepage>
+<div *ngIf="(mode == 'main_screen')" class="fill-av">
+  <div class="container">
+    <div class="row no-gutters">
+      <div class="col sidecol side_nav">
+        <br>
+        
+        <!-- Sidebar setup -->
+        <div class="settings_buttons">
+          <table align="center">
+            <tr>
+              <td>
+                <button class="optionButtons" (click)="this.changeMode(false)">Home Page</button>
+              </td>
+            </tr>
+            <tr>
+              <td *ngIf="experiment_file_categories.length != 0 && this.xmlConverter.xmlObjectTree.length != 0">
+                <button class="optionButtons" (click)="saveChanges(false)" [disabled]="filterMode || !this.xmlConverter.unsavedChanges">Save Changes</button>
+              </td>
+            </tr>
+            <tr>
+              <td *ngIf="experiment_file_categories.length != 0 && this.xmlConverter.xmlObjectTree.length != 0">
+                <button class="optionButtons" (click)="saveChanges(true)" [disabled]="filterMode || !this.xmlConverter.unsavedChanges ">Save as new
+                  version</button>
+                </td>
+              </tr>
+              <tr>
+                <td *ngIf="xmlConverter.xmlObjectTree.length != 0  && this.show_xml_file == false   ">
+                  <button class="optionButtons" (click)="this.showRawXmlFile()">Show File</button>
+                </td>
+                <td *ngIf="xmlConverter.xmlObjectTree.length == 0 && this.show_xml_file == false ">
+                  <br>
+                </td>
+              </tr>
+              <tr>
+                <td *ngIf="xmlConverter.xmlObjectTree.length != 0  && this.show_xml_file == true ">
+                  <button class="optionButtons" (click)="this.hideRawXmlFile()">Hide File</button>
+                </td>
+                <td *ngIf="xmlConverter.xmlObjectTree.length == 0  && this.show_xml_file == true">
+                  <br>
+                </td>
+              </tr>
+              <tr>
+                <td *ngIf="xmlConverter.xmlObjectTree.length != 0  ">
+                  <button class="optionButtons" (click)="this.filterMode = true">Add Filter</button>
+                </td>
+              </tr>
+              <tr>
+                <td *ngIf="xmlConverter.xmlObjectTree.length != 0 && !filter_disabled">
+                  <button class="optionButtons" (click)="disableFilter()">Disable Filter:
+                    {{selected_filter_name}}</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td *ngIf="xmlConverter.xmlObjectTree.length != 0 &&  filter_disabled">
+                    <button class="optionButtons" (click)="loadFilter()" [disabled]="filterMode">Load Filter</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td *ngIf="xmlConverter.xmlObjectTree.length != 0 ">
+                    <button class="optionButtons"
+                    (click)="downloadFile(this.xmlConverter.fileString, fileName_for_download )">Export File</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td *ngIf="xmlConverter.xmlObjectTree.length != 0 ">
+                    <button class="optionButtons" (click)="downloadProjectFiles()">Export Experiment Files</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td *ngIf="experiment_file_categories.length != 0 && this.xmlConverter.xmlObjectTree.length != 0">
+                    <button class="optionButtons" (click)="restoreVersion()"
+                    [disabled]="filterMode || current_version==1">Restore to previous version </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td *ngIf="experiment_file_categories.length != 0 && skabat_pass =='skabat'">
+                    <button class="optionButtons" (click)="deleteExperiment()" [disabled]="filterMode">Delete
+                      Experiment</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <button *ngIf="skabat_pass != 'skabat'" class="optionButtons" (click)="skabatPopup(false)">Activate
+                        Admin</button>
+                        <button *ngIf="skabat_pass == 'skabat'" class="optionButtons" (click)="skabatPopup(true)">Deactivate
+                          Admin</button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <hr>
+                      </tr>
+                    </table>
+                  </div>
+                  
+                  <!-- Categories section -->
+                  <div class="files_table">
+                    <table *ngFor="let category of experiment_file_categories; let i=index;">
+                      <tr *ngFor="let subCategory of category; let j=index;">
+                        <div [style.padding-left.px]="(subCategory.level-1)*20">
+                          <button *ngIf="subCategory.show_selected_category =='-' && subCategory.show_files =='-'"
+                          (click)="HideShowCategories(i,j)" class="categoryButton">
+                          <mat-icon [inline]="true">arrow_drop_down</mat-icon>{{subCategory.name}}
+                        </button>
+                        <button *ngIf="subCategory.show_selected_category =='-' && subCategory.show_files =='+'"
+                        (click)="HideShowCategories(i,j)" class="categoryButton">
+                        <mat-icon [inline]="true">arrow_right</mat-icon>{{subCategory.name}}
+                      </button>
+                    </div>
+                    <table>
+                      <tr *ngFor="let file of subCategory.file_objects; let k = index;">
+                        <td [style.padding-left.px]="(subCategory.level-1)*20+20" *ngIf="subCategory.show_files =='-'">
+                          <button class="optionButtons" [ngClass]="{'selectedFile': file.fileClicked}"
+                          [disabled]="filterMode || file.fileClicked"
+                          (click)="loadFile(file.xml_object, file.xml_object_tree, file.title, file.file_string, file.xml_object_max_id, i , j , k); localFileName = file.file_name">{{file.file_name}}</button>
+                        </td>
+                      </tr>
+                    </table>
+                  </tr>
+                </table>
+              </div>
+              <!-- End of categories section + sidebar -->
+              
+              
+              <!-- Experiment header setup -->
+            </div>
+            <div class="col">
+              <div class="fixed_div">
+                <div
+                style="text-align: center; font-size: 24pt; color: rgb(0, 16, 107); font-family: 'Palatino Linotype'; text-shadow: 2px 2px 2px rgb(43, 43, 43);  letter-spacing: 2px">
+                {{experiment_name}} project (v{{ current_version }}.0)
+              </div>
+              <div
+              style="text-align: center; font-size: 20pt; color: rgb(0, 0, 0); font-family: 'Palatino Linotype'; text-shadow: 2px 2px 2px rgb(43, 43, 43);  letter-spacing: 1px">
+              {{xmlConverter.title}}
+            </div>
+            <div *ngIf="xmlConverter.xmlObjectTree.length == 0"
+            style="text-align: center; font-size: 16pt; color: rgb(255, 0, 0); font-family: 'Palatino Linotype'; text-shadow: px 1px 1px rgb(48, 48, 48);  letter-spacing: 1px">
+            Please select a file from the categories menu
+          </div>
+          <div *ngIf="!filter_disabled" style="text-align: center; font-size: 15pt; color: rgb(100, 0, 0);"> Activated
+            filter: {{ selected_filter_name }} </div>
+            <div *ngIf="xmlConverter.unsavedChanges"
+            style="text-align: center; font-size: 16pt; color: rgb(255, 0, 0); font-family: 'Palatino Linotype'; text-shadow: px 1px 1px rgb(48, 48, 48);  letter-spacing: 1px">
+            There are unsaved changes
+          </div>
+          <table align="center" *ngIf="filterMode">
+            <tr align="center">
+              <td colspan="2"
+              style="text-align: center; font-size: 13pt; color: rgb(255, 0, 0); font-family: 'Palatino Linotype'; text-shadow: 1px 1px 1px rgb(87, 87, 87);  letter-spacing: 1px">
+              Filter is not saved
+            </td>
+          </tr>
+          <tr align="center">
+            <td colspan="2">
+              <input size="40" type="text" placeholder="Filter Name" [(ngModel)]="new_filter_name">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <button class="optionButtons" (click)="handleActivateRequest()">Save</button>
+            </td>
+            <td>
+              <button class="optionButtons" (click)="this.filterMode = false; this.marked_fields = []">Cancel</button>
+            </td>
+          </tr>
+        </table>
+        <div *ngIf="xmlConverter.unsavedChanges == false" style="text-align: center">
+          <br>
+        </div>
+      </div>
+      
+      <!-- End of main header -->
+      <table *ngIf="xmlConverter.title == 'MMI_Stations'" align="center">
+        <tr>
+          <td *ngIf="xmlConverter.xmlObjectTree[0] != undefined">
+            <div class="raw_file" *ngIf="xmlConverter.fileString != undefined && this.show_xml_file == true">
+              <textarea class="textarea-wrapper" [(ngModel)]="xmlConverter.fileString" rows="7" cols="70"
+              (ngModelChange)="xmlConverter.onChanges()" (focusout)="xmlConverter.updateValues(false)">
+              {{xmlConverter.fileString}}
+            </textarea>
+          </div>
+        </td>
+      </tr>
+    </table>
+    
+    <!-- Form display -->
+    <div *ngIf="xmlConverter != undefined">
+      
+      <table *ngIf="xmlConverter.title != 'MMI_Stations'" class="table_class">
+        <tr>
+          <td class="row_style_hidden" *ngIf="experiment_file_categories.length != 0 && !show_main_tabs">
+            <mat-icon style="font-size: 30px; cursor: pointer" (click)="this.show_main_tabs = true">arrow_right
+            </mat-icon>
+          </td>
+          <td class="row_style" *ngIf="show_main_tabs && xmlConverter.xmlObjectTree.length != 0">
+            <mat-icon style="font-size: 30px; cursor: pointer; color: gray"
+            *ngIf="experiment_file_categories.length != 0 && show_main_tabs && xmlConverter.xmlObjectTree.length != 0"
+            (click)="this.show_main_tabs = false">arrow_left</mat-icon>
+            <mat-nav-list>
+              <div *ngFor="let item of xmlConverter.xmlObjectTree; let i=index">
+                <mat-list-item [ngClass]="{list_style: i === this.tab_index}" (click)="setTabIndex(i)"
+                *ngIf="filter_disabled && xmlConverter.title != 'Comm_DisplayComputers'">
+                <div class="tab_style">
+                  {{item[0].key}}
+                </div>
+              </mat-list-item>
+              <mat-list-item [ngClass]="{list_style: i === this.tab_index}" (click)="setTabIndex(i)"
+              *ngIf="filter_disabled  && xmlConverter.title == 'Comm_DisplayComputers'">
+              <div class="tab_style">
+                {{item[2].value[0]}}
+              </div>
+            </mat-list-item>
+            
+            <!-- If the filter is activated, we want to see only the filtered tabs-->
+            <mat-list-item [ngClass]="{list_style: i === this.tab_index}" (click)="setTabIndex(i)"
+            *ngIf="!filter_disabled && this.filteredTabs.includes(i) && xmlConverter.title != 'Comm_DisplayComputers'">
+            <div class="tab_style">
+              {{item[0].key}}
+            </div>
+          </mat-list-item>
+          
+          <mat-list-item [ngClass]="{list_style: i === this.tab_index}" (click)="setTabIndex(i)"
+          *ngIf="!filter_disabled && this.filteredTabs.includes(i) && xmlConverter.title == 'Comm_DisplayComputers'">
+          <div class="tab_style">
+            {{item[2].value[0]}}
+          </div>
+        </mat-list-item>
+        
+        
+      </div>
+    </mat-nav-list>
+  </td>
+  <td valign="top">
+    <div *ngIf="this.tab_index != undefined" class="main_table">
+      <table *ngFor="let xmlNode of xmlConverter.xmlObjectTree[this.tab_index]; let j=index;">
+        <tr>
+          <!-- Setting up a display according to filter status -->
+          <div *ngIf="filter_disabled;then showAllHeaders else showFilteredHeaders"> </div>
+          <ng-template #showAllHeaders>
+            <td *ngIf="filterMode && (xmlNode.value == 'header' && xmlNode.show_headers =='-')">
+              <input type="checkbox" [checked]="isChecked({'iPosition': this.tab_index, 'jPosition':j})"
+              (change)="markField($event.target.checked, {'iPosition': this.tab_index, 'jPosition':j})">
+            </td>
+            <td colspan="2" *ngIf="(xmlNode.value == 'header' && xmlNode.show_headers =='-') "
+            [style.padding-left.px]="(xmlNode.level-1)*10" [style.color]="level_colors[xmlNode.level]"
+            width="180px">
+            <div class="btn-group" dropdown>
+              <mat-icon
+              *ngIf="(xmlNode.show_nodes == '+' && j != 0) || (skabat_pass =='skabat' && xmlNode.show_nodes == '+')"
+              class="dropdown_style" (click)="HideShowNodes(this.tab_index,j)">
+              arrow_right</mat-icon>
+              <mat-icon
+              *ngIf="(xmlNode.show_nodes == '-' && j != 0) || (skabat_pass =='skabat' && xmlNode.show_nodes == '-')"
+              class="dropdown_style" (click)="HideShowNodes(this.tab_index,j)">
+              arrow_drop_down</mat-icon>
+              <label *ngIf="skabat_pass =='skabat' && !filterMode" class="dropdown_style header-style"
+              dropdownToggle>{{xmlNode.key}}</label>
+              <label *ngIf="(skabat_pass !='skabat' && j != 0) || filterMode"
+              class="header-style">{{xmlNode.key}}</label>
+              
+              <!-- settings menu when pressing an header  -->
+              <ul *dropdownMenu class="dropdown-menu" role="menu">
+                <li role="menuitem"><a class="dropdown-item" style="cursor:pointer"
+                  (click)="NewNodePopup(xmlNode, {'i': this.tab_index, 'j': j})">Add entity</a></li>
+                  <li role="menuitem"><a class="dropdown-item" style="cursor:pointer"
+                    (click)="xmlConverter.copyParent(xmlNode,{'i': this.tab_index, 'j': j}, filter_disabled ); modifiedFileObjectLoaction() ">Clone
+                    Entity</a></li>
+                    <li role="menuitem"><a class="dropdown-item" style="cursor:pointer"
+                      (click)="deleteEntity(xmlNode,{'i': this.tab_index, 'j': j} )">Delete
+                      Entity</a></li>
+                    </ul>
+                  </div>
+                  
+                </td>
+              </ng-template>
+              <ng-template #showFilteredHeaders>
+                <td *ngIf="filterMode && (xmlNode.value == 'header' && xmlNode.show_headers =='-')">
+                  <input type="checkbox" *ngIf="filterMode && xmlNode.filtered"
+                  (change)="markField($event.target.checked, {'iPosition': this.tab_index, 'jPosition':j})">
+                </td>
+                <td colspan="2"
+                *ngIf="xmlNode.filtered && (xmlNode.value == 'header' && xmlNode.show_headers =='-') "
+                [style.padding-left.px]="(xmlNode.level-1)*10" [style.color]="level_colors[xmlNode.level]"
+                width="180px">
+                
+                <div class="btn-group" dropdown>
+                  <mat-icon
+                  *ngIf="(xmlNode.show_nodes == '+' && j != 0) || (skabat_pass =='skabat' && xmlNode.show_nodes == '+')"
+                  class="dropdown_style" (click)="HideShowNodes(this.tab_index,j)">
+                  arrow_right</mat-icon>
+                  <mat-icon
+                  *ngIf="(xmlNode.show_nodes == '-' && j != 0) || (skabat_pass =='skabat' && xmlNode.show_nodes == '-')"
+                  class="dropdown_style" (click)="HideShowNodes(this.tab_index,j)">
+                  arrow_drop_down</mat-icon>
+                  <label *ngIf="skabat_pass =='skabat' && !filterMode" class="dropdown_style header-style"
+                  dropdownToggle>{{xmlNode.key}}</label>
+                  <label *ngIf="(skabat_pass !='skabat' && j != 0) || filterMode"
+                  class="header-style">{{xmlNode.key}}</label>
+                  <ul *dropdownMenu class="dropdown-menu" role="menu">
+                    <li role="menuitem"><a class="dropdown-item" style="cursor:pointer"
+                      (click)="NewNodePopup(xmlNode, {'i': this.tab_index, 'j': j})">Add entity</a></li>
+                      <li role="menuitem"><a class="dropdown-item" style="cursor:pointer"
+                        (click)="xmlConverter.copyParent(xmlNode,{'i': this.tab_index, 'j': j}, filter_disabled ); modifiedFileObjectLoaction()">Clone
+                        Entity</a></li>
+                        <li role="menuitem"><a class="dropdown-item" style="cursor:pointer"
+                          (click)=" deleteEntity(xmlNode,{'i': this.tab_index, 'j': j} )">Delete
+                          Entity</a></li>
+                        </ul>
+                      </div>
+                    </td>
+                  </ng-template>
+                  
+                  <!-- Setting up a display according to filter status -->
+                  <div *ngIf="filter_disabled;then showAllKeys else showFilteredKeys"> </div>
+                  <ng-template #showAllKeys>
+                    <td *ngIf=" (xmlNode.value != 'header' && xmlNode.show_nodes =='-')"
+                    [style.padding-left.px]="(xmlNode.level)*12" [style.color]="level_colors[xmlNode.level]"
+                    width="240px">
+                    <label class="dropLabel key_style">
+                      <mat-icon *ngIf="skabat_pass =='skabat'" [inline]="true" class="dropdown_style"
+                      (click)="deleteEntity(xmlNode,{'i': this.tab_index, 'j': j})">
+                      delete_outline</mat-icon>{{xmlNode.key}}
+                    </label>
+                  </td>
+                </ng-template>
+                <ng-template #showFilteredKeys>
+                  <td *ngIf=" xmlNode.filtered && (xmlNode.value != 'header' && xmlNode.show_nodes =='-')"
+                  [style.padding-left.px]="(xmlNode.level)*12" [style.color]="level_colors[xmlNode.level]"
+                  width="240px">
+                  <label class="dropLabel key_style">
+                    <mat-icon *ngIf="skabat_pass =='skabat'" [inline]="true" class="dropdown_style"
+                    (click)="deleteEntity(xmlNode,{'i': this.tab_index, 'j': j})">
+                    delete_outline</mat-icon>{{xmlNode.key}}
+                  </label>
+                </td>
+              </ng-template>
+              
+              <!-- Setting up a display according to filter status -->
+              <div *ngIf="filter_disabled;then showAll else showFiltered"> </div>
+              <ng-template #showAll>
+                <td *ngIf=" (xmlNode.value != 'header' && xmlNode.show_nodes =='-')" width="200px">
+                  <input type="text" class="input-style" placeholder="no-value" [(ngModel)]="xmlNode.value[0]"
+                  (ngModelChange)="xmlConverter.onChanges()"
+                  (focusout)="xmlConverter.updateValues(false); modifiedFileObjectLoaction(this.selected_file_location)">
+                </td>
+              </ng-template>
+              <ng-template #showFiltered>
+                <td *ngIf="xmlNode.filtered && (xmlNode.value != 'header' && xmlNode.show_nodes =='-')"
+                width="200px">
+                <input type="text" class="input-style" placeholder="no-value" [(ngModel)]="xmlNode.value[0]"
+                (ngModelChange)="xmlConverter.onChanges()" (focusout)="xmlConverter.updateValues(false); modifiedFileObjectLoaction(this.selected_file_location)">
+              </td>
+            </ng-template>
+            
+          </tr>
+          
+        </table>
+      </div>
+      
+    </td>
+    
+    <!-- Raw xml file settings -->
+    <td valign="top">
+      <table align="center">
+        <tr>
+          <td *ngIf="xmlConverter.xmlObjectTree[0] != undefined">
+            <div class="raw_file" *ngIf="xmlConverter.fileString != undefined && this.show_xml_file == true">
+              <textarea class="textarea-wrapper" [(ngModel)]="xmlConverter.fileString" rows="27" cols="40"
+              (ngModelChange)="xmlConverter.onChanges()" (focusout)="xmlConverter.updateValues(false)">
+              {{xmlConverter.fileString}}
+            </textarea>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<!--THIS IS A TEMP PART FOR DISPLAYING THE MMI_STATIONS AS CUSTOM VIEW-->
+<mat-tab-group *ngIf=" xmlConverter.length != 0 && xmlConverter.title == 'MMI_Stations'"
+(selectedTabChange)="resetTabs()" dynamicHeight="true" mat-align-tabs="center" animationDuration="0ms">
+<mat-tab *ngFor="let item of xmlConverter.xmlObjectTree; let k=index" [label]=main_tabs_names[k]>
+  <br>
+  <table *ngIf="xmlConverter.title == 'MMI_Stations'" class="table_class">
+    <tr>
+      <td class="row_style_hidden_disp_stations"
+      *ngIf="experiment_file_categories.length != 0 && !show_main_tabs">
+      <mat-icon style="font-size: 30px; cursor: pointer" (click)="this.show_main_tabs = true">arrow_right
+      </mat-icon>
+    </td>
+    <td class="row_style_disp_stations" *ngIf="show_main_tabs && xmlConverter.xmlObjectTree.length != 0">
+      <mat-icon style="font-size: 30px; cursor: pointer; color: gray"
+      *ngIf="experiment_file_categories.length != 0 && show_main_tabs && xmlConverter.xmlObjectTree.length != 0"
+      (click)="this.show_main_tabs = false">arrow_left</mat-icon>
+      <mat-nav-list>
+        <ng-container *ngFor="let item of xmlConverter.xmlObjectTree[k]; let i=index">
+          <mat-list-item *ngIf="item.level == 2" [ngClass]="{list_style: i === this.tab_index}"
+          (click)="display_mmi_stations_data(k,i)">
+          <div class="tab_style">
+            {{station_names_array[k][i]}}_{{station_ids_array[k][i]}}
+          </div>
+        </mat-list-item>
+      </ng-container>
+    </mat-nav-list>
+  </td>
+  <td valign="top">
+    <div *ngIf="k != undefined" class="main_table_disp_stations">
+      <table *ngFor="let xmlNode of xmlConverter.xmlObjectTree[k]; let j=index;">
+        <tr
+        *ngIf=" (j >= this.start_index && j <= this.start_index+3) && j != this.start_index+1 || j == this.start_index+15">
+        <div *ngIf="filter_disabled;then showAllHeaders else showFilteredHeaders"> </div>
+        <ng-template #showAllHeaders>
+          <td *ngIf="filterMode && (xmlNode.value == 'header' && xmlNode.show_headers =='-')">
+            <input type="checkbox"
+            (change)="markField($event.target.checked, {'iPosition': k, 'jPosition':j})">
+          </td>
+          <td colspan="2" *ngIf="(xmlNode.value == 'header' && xmlNode.show_headers =='-') "
+          [style.padding-left.px]="20" [style.color]="level_colors[1]" width="180px">
+          <div class="btn-group" dropdown>
+            <mat-icon
+            *ngIf="(xmlNode.show_nodes == '+' && j != this.start_index) || (skabat_pass =='skabat' && xmlNode.show_nodes == '+')"
+            class="dropdown_style" (click)="HideShowNodes(k,j)">
+            arrow_right</mat-icon>
+            <mat-icon
+            *ngIf="(xmlNode.show_nodes == '-' && j != this.start_index) || (skabat_pass =='skabat' && xmlNode.show_nodes == '-')"
+            class="dropdown_style" (click)="HideShowNodes(k,j)">
+            arrow_drop_down</mat-icon>
+            <label *ngIf="skabat_pass =='skabat' && !filterMode" class="dropdown_style header-style"
+            dropdownToggle>{{xmlNode.key}}</label>
+            <label *ngIf="(skabat_pass !='skabat' && j != this.start_index) || filterMode"
+            class="header-style">{{xmlNode.key}}</label>
+            <ul *dropdownMenu class="dropdown-menu" role="menu">
+              <li role="menuitem"><a class="dropdown-item" style="cursor:pointer"
+                (click)="mmi_stations_clone(xmlNode,k,j)">Clone
+                Entity</a></li>
+                <li role="menuitem"><a class="dropdown-item" style="cursor:pointer"
+                  (click)="deleteEntity(xmlNode,{'i': k, 'j': j} )">Delete
+                  Entity</a></li>
+                </ul>
+              </div>
+              
+            </td>
+          </ng-template>
+          <ng-template #showFilteredHeaders>
+            <td *ngIf="filterMode && (xmlNode.value == 'header' && xmlNode.show_headers =='-')">
+              <input type="checkbox" *ngIf="filterMode && xmlNode.filtered"
+              (change)="markField($event.target.checked, {'iPosition': k, 'jPosition':j})">
+            </td>
+            <td colspan="2"
+            *ngIf="xmlNode.filtered && (xmlNode.value == 'header' && xmlNode.show_headers =='-') "
+            [style.padding-left.px]="20" [style.color]="level_colors[1]" width="180px">
+            
+            <div class="btn-group" dropdown>
+              <mat-icon
+              *ngIf="(xmlNode.show_nodes == '+' && j != this.start_index) || (skabat_pass =='skabat' && xmlNode.show_nodes == '+')"
+              class="dropdown_style" (click)="HideShowNodes(k,j)">
+              arrow_right</mat-icon>
+              <mat-icon
+              *ngIf="(xmlNode.show_nodes == '-' && j != this.start_index) || (skabat_pass =='skabat' && xmlNode.show_nodes == '-')"
+              class="dropdown_style" (click)="HideShowNodes(k,j)">
+              arrow_drop_down</mat-icon>
+              <label *ngIf="skabat_pass =='skabat' !filterMode" class="dropdown_style header-style"
+              dropdownToggle>{{xmlNode.key}}</label>
+              <label *ngIf="(skabat_pass !='skabat' && j != this.start_index) || filterMode"
+              class="header-style">{{xmlNode.key}}</label>
+              <ul *dropdownMenu class="dropdown-menu" role="menu">
+                <li role="menuitem"><a class="dropdown-item" style="cursor:pointer"
+                  (click)="mmi_stations_clone(xmlNode,k,j)">Clone
+                  Entity</a></li>
+                  <li role="menuitem"><a class="dropdown-item" style="cursor:pointer"
+                    (click)=" deleteEntity(xmlNode,{'i': k, 'j': j} )">Delete
+                    Entity</a></li>
+                  </ul>
+                </div>
+              </td>
+            </ng-template>
+            
+            
+            <div *ngIf="filter_disabled;then showAllKeys else showFilteredKeys"> </div>
+            <ng-template #showAllKeys>
+              <td *ngIf=" (xmlNode.value != 'header' && xmlNode.show_nodes =='-')"
+              [style.padding-left.px]="20" [style.color]="level_colors[1]" width="180px">
+              <label class="dropLabel key_style">
+                <mat-icon *ngIf="skabat_pass =='skabat'" [inline]="true" class="dropdown_style"
+                (click)="deleteEntity(xmlNode,{'i': k, 'j': j})">
+                delete_outline</mat-icon>{{xmlNode.key}}
+              </label>
+            </td>
+          </ng-template>
+          <ng-template #showFilteredKeys>
+            <td *ngIf=" xmlNode.filtered && (xmlNode.value != 'header' && xmlNode.show_nodes =='-')"
+            [style.padding-left.px]="20" [style.color]="level_colors[1]" width="180px">
+            <label class="dropLabel key_style">
+              <mat-icon *ngIf="skabat_pass =='skabat'" [inline]="true" class="dropdown_style"
+              (click)="deleteEntity(xmlNode,{'i': k, 'j': j})">
+              delete_outline</mat-icon>{{xmlNode.key}}
+            </label>
+          </td>
+        </ng-template>
+        
+        <div *ngIf="filter_disabled;then showAll else showFiltered"> </div>
+        <ng-template #showAll>
+          <td *ngIf="(xmlNode.value != 'header' && xmlNode.show_nodes =='-')" width="200px">
+            <select *ngIf="xmlNode.key =='presetName'"  [(ngModel)]="selectedValue">
+              <option *ngFor="let name of presetNames"  (ngModelChange)="xmlConverter.onChanges()" (focusout)="xmlConverter.updateValues(false); modifiedFileObjectLoaction(this.selected_file_location)" [ngValue]="name">{{name}}</option>
+            </select>
+            <input *ngIf="xmlNode.key !='presetName'" type="text" class="input-style" placeholder="no-value"
+            [(ngModel)]="xmlNode.value[0]" (ngModelChange)="xmlConverter.onChanges()"
+            (focusout)="xmlConverter.updateValues(false); modifiedFileObjectLoaction(this.selected_file_location)">
+          </td>
+        </ng-template>
+        <ng-template #showFiltered>
+          <td *ngIf="xmlNode.filtered && (xmlNode.value != 'header' && xmlNode.show_nodes =='-')"
+          width="200px">
+          <select *ngIf="xmlNode.key =='presetName'"  [(ngModel)]="selectedValue">
+            <option *ngFor="let name of presetNames"  (ngModelChange)="xmlConverter.onChanges()" (focusout)="xmlConverter.updateValues(false); modifiedFileObjectLoaction(this.selected_file_location)" [ngValue]="name">{{name}}</option>
+          </select>
+          <input *ngIf="xmlNode.key !='presetName'" type="text" class="input-style" placeholder="no-value"
+          [(ngModel)]="xmlNode.value[0]" (ngModelChange)="xmlConverter.onChanges()"
+          (focusout)="xmlConverter.updateValues(false)">
+        </td>
+      </ng-template>
+    </tr>
+  </table>
+</div>
+</td>
+</tr>
+</table>
+</mat-tab>
+</mat-tab-group>
+<!--END OF TEMP PART FOR DISPLAYING THE MMI_STATIONS AS CUSTOM VIEW-->
+</div>
+</div>
+</div>
+</div>
+</div>
