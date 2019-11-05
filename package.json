@@ -31,7 +31,7 @@
     "express": "^4.16.4",
     "file-saver": "^2.0.1",
     "jszip": "^3.2.1",
-    "mongoose": "^5.5.2",
+    "mongoose": "^5.7.5",
     "ngx-bootstrap": "^4.2.0",
     "rxjs": "~6.3.3",
     "stream": "0.0.2",
